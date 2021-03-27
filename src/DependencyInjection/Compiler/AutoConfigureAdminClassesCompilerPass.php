@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace KunicMarko\SonataAutoConfigureBundle\DependencyInjection\Compiler;
 
 use Doctrine\Common\Annotations\Reader;
-use Doctrine\Common\Inflector\Inflector;
+use Doctrine\Inflector\Inflector;
+use Doctrine\Inflector\InflectorFactory;
 use KunicMarko\SonataAutoConfigureBundle\Annotation\AdminOptions;
 use KunicMarko\SonataAutoConfigureBundle\Exception\EntityNotFound;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -40,6 +41,9 @@ final class AutoConfigureAdminClassesCompilerPass implements CompilerPassInterfa
 
     public function process(ContainerBuilder $container): void
     {
+
+        $inflector = InflectorFactory::create()->build();
+
         $annotationReader = $container->get('annotation_reader');
 
         \assert($annotationReader instanceof Reader);
@@ -80,7 +84,7 @@ final class AutoConfigureAdminClassesCompilerPass implements CompilerPassInterfa
                 AdminOptions::class
             ) ?? new AdminOptions();
 
-            $this->setDefaultValuesForAnnotation($annotation, $name, $annotationDefaults);
+            $this->setDefaultValuesForAnnotation($inflector, $annotation, $name, $annotationDefaults);
 
             $container->removeDefinition($id);
             $definition = $container->setDefinition(
@@ -114,10 +118,10 @@ final class AutoConfigureAdminClassesCompilerPass implements CompilerPassInterfa
         }
     }
 
-    private function setDefaultValuesForAnnotation(AdminOptions $annotation, string $name, array $defaults): void
+    private function setDefaultValuesForAnnotation(Inflector $inflector, AdminOptions $annotation, string $name, array $defaults): void
     {
         if (!$annotation->label) {
-            $annotation->label = Inflector::ucwords(\str_replace('_', ' ', Inflector::tableize($name)));
+            $annotation->label = $inflector->capitalize(\str_replace('_', ' ', $inflector->tableize($name)));
         }
 
         if (!$annotation->labelCatalogue) {

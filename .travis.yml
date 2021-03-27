@@ -1,23 +1,23 @@
 language: php
 
 php:
-  - '7.1'
-  - '7.2'
-  - '7.3'
-  - nightly
+  - '7.3.24'
+  - '7.4.3'
+  - '8.0'
 
 env:
   global:
+    - XDEBUG_MODE=coverage
     - TARGET=test
 
 matrix:
   fast_finish: true
   include:
-    - php: '7.2'
+    - php: '7.4.3'
       env: TARGET=behat
 
   allow_failures:
-    - php: nightly
+    - php: '8.0'
 
 install:
   - if [ -x .travis/install_${TARGET}.sh ]; then .travis/install_${TARGET}.sh; fi;
